@@ -362,7 +362,7 @@ NOTES - HASH MAP
     a strong random number to stbds_rand_seed.
 
   * The default value for the hash table is stored in foo[-1], so if you
-    use code like 'hmget(T,k)->value = 5' you can accidentally overwrite
+    use code like 'hmget(T,k)->val = 5' you can accidentally overwrite
     the value stored by hmdefault if 'k' is not present.
 
 CREDITS
@@ -563,7 +563,7 @@ extern void * stbds_shmode_func(size_t elemsize, int mode);
 #define stbds_hmput(t, k, v) \
     ((t) = stbds_hmput_key_wrapper((t), sizeof *(t), (void*) STBDS_ADDRESSOF((t)->key, (k)), sizeof (t)->key, 0),   \
      (t)[stbds_temp((t)-1)].key = (k),    \
-     (t)[stbds_temp((t)-1)].value = (v))
+     (t)[stbds_temp((t)-1)].val = (v))
 
 #define stbds_hmputs(t, s) \
     ((t) = stbds_hmput_key_wrapper((t), sizeof *(t), &(s).key, sizeof (s).key, STBDS_HM_BINARY), \
@@ -587,7 +587,7 @@ extern void * stbds_shmode_func(size_t elemsize, int mode);
     (((t) = stbds_hmdel_key_wrapper((t),sizeof *(t), (void*) STBDS_ADDRESSOF((t)->key, (k)), sizeof (t)->key, STBDS_OFFSETOF((t),key), STBDS_HM_BINARY)),(t)?stbds_temp((t)-1):0)
 
 #define stbds_hmdefault(t, v) \
-    ((t) = stbds_hmput_default_wrapper((t), sizeof *(t)), (t)[-1].value = (v))
+    ((t) = stbds_hmput_default_wrapper((t), sizeof *(t)), (t)[-1].val = (v))
 
 #define stbds_hmdefaults(t, s) \
     ((t) = stbds_hmput_default_wrapper((t), sizeof *(t)), (t)[-1] = (s))
@@ -596,19 +596,19 @@ extern void * stbds_shmode_func(size_t elemsize, int mode);
     ((void) ((p) != NULL ? stbds_hmfree_func((p)-1,sizeof*(p)),0 : 0),(p)=NULL)
 
 #define stbds_hmgets(t, k)    (*stbds_hmgetp(t,k))
-#define stbds_hmget(t, k)     (stbds_hmgetp(t,k)->value)
-#define stbds_hmget_ts(t, k, temp)  (stbds_hmgetp_ts(t,k,temp)->value)
+#define stbds_hmget(t, k)     (stbds_hmgetp(t,k)->val)
+#define stbds_hmget_ts(t, k, temp)  (stbds_hmgetp_ts(t,k,temp)->val)
 #define stbds_hmlen(t)        ((t) ? (ptrdiff_t) stbds_header((t)-1)->length-1 : 0)
 #define stbds_hmlenu(t)       ((t) ?             stbds_header((t)-1)->length-1 : 0)
 #define stbds_hmgetp_null(t,k)  (stbds_hmgeti(t,k) == -1 ? NULL : &(t)[stbds_temp((t)-1)])
 
 #define stbds_shput(t, k, v) \
     ((t) = stbds_hmput_key_wrapper((t), sizeof *(t), (void*) (k), sizeof (t)->key, STBDS_HM_STRING),   \
-     (t)[stbds_temp((t)-1)].value = (v))
+     (t)[stbds_temp((t)-1)].val = (v))
 
 #define stbds_shputi(t, k, v) \
     ((t) = stbds_hmput_key_wrapper((t), sizeof *(t), (void*) (k), sizeof (t)->key, STBDS_HM_STRING),   \
-     (t)[stbds_temp((t)-1)].value = (v), stbds_temp((t)-1))
+     (t)[stbds_temp((t)-1)].val = (v), stbds_temp((t)-1))
 
 #define stbds_shputs(t, s) \
     ((t) = stbds_hmput_key_wrapper((t), sizeof *(t), (void*) (s).key, sizeof (s).key, STBDS_HM_STRING), \
@@ -650,7 +650,7 @@ extern void * stbds_shmode_func(size_t elemsize, int mode);
 #define stbds_shlenu       stbds_hmlenu
 
 #define stbds_shgets(t, k) (*stbds_shgetp(t,k))
-#define stbds_shget(t, k)  (stbds_shgetp(t,k)->value)
+#define stbds_shget(t, k)  (stbds_shgetp(t,k)->val)
 #define stbds_shgetp_null(t,k)  (stbds_shgeti(t,k) == -1 ? NULL : &(t)[stbds_temp((t)-1)])
 #define stbds_shlen        stbds_hmlen
 
@@ -1739,31 +1739,31 @@ void stbds_unit_tests(void)
   strreset(&sa);
 
   {
-    s.key = "a", s.value = 1;
+    s.key = "a", s.val = 1;
     shputs(strmap, s);
     STBDS_ASSERT(*strmap[0].key == 'a');
     STBDS_ASSERT(strmap[0].key == s.key);
-    STBDS_ASSERT(strmap[0].value == s.value);
+    STBDS_ASSERT(strmap[0].val == s.val);
     shfree(strmap);
   }
 
   {
-    s.key = "a", s.value = 1;
+    s.key = "a", s.val = 1;
     sh_new_strdup(strmap);
     shputs(strmap, s);
     STBDS_ASSERT(*strmap[0].key == 'a');
     STBDS_ASSERT(strmap[0].key != s.key);
-    STBDS_ASSERT(strmap[0].value == s.value);
+    STBDS_ASSERT(strmap[0].val == s.val);
     shfree(strmap);
   }
 
   {
-    s.key = "a", s.value = 1;
+    s.key = "a", s.val = 1;
     sh_new_arena(strmap);
     shputs(strmap, s);
     STBDS_ASSERT(*strmap[0].key == 'a');
     STBDS_ASSERT(strmap[0].key != s.key);
-    STBDS_ASSERT(strmap[0].value == s.value);
+    STBDS_ASSERT(strmap[0].val == s.val);
     shfree(strmap);
   }
 
